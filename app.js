@@ -15,7 +15,9 @@
         isAnimating: false,
         touchStartY: 0,
         touchStartTime: 0,
-        parallaxOffset: 0
+        parallaxOffset: 0,
+        photoRotationInterval: null,
+        currentPhotoIndex: 0
     };
 
     // ============================================
@@ -53,6 +55,8 @@
         updateBackground(0);
     }
 
+
+
     // ============================================
     // Generate Card Screens
     // ============================================
@@ -74,15 +78,6 @@
           <div class="glass-panel card-answer-panel">
             <p class="card-answer">${q.answerShort}</p>
           </div>
-          <div class="card-highlight-wrapper">
-            <button class="card-highlight" data-index="${index}">
-              <span>${q.highlight}</span>
-              <svg class="card-highlight-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6,9 12,15 18,9"></polyline>
-              </svg>
-            </button>
-            <p class="card-short-highlight">${q.shortHighlight}</p>
-          </div>
           <p class="card-footer">Полная версия — офлайн при встрече.</p>
         </div>
       `;
@@ -103,9 +98,17 @@
         elements.btnPrev.addEventListener('click', navigatePrev);
         elements.btnNext.addEventListener('click', navigateNext);
 
+        // Values "Дальше" button
+        const btnValuesNext = document.getElementById('btn-values-next');
+        if (btnValuesNext) {
+            btnValuesNext.addEventListener('click', () => navigateTo('card-1', 'down'));
+        }
+
         // Modal buttons
         elements.btnHowto.addEventListener('click', () => openModal('modal-howto'));
-        elements.btnMeet.addEventListener('click', () => openModal('modal-meet'));
+        if (elements.btnMeet) {
+            elements.btnMeet.addEventListener('click', () => openModal('modal-meet'));
+        }
 
         // Modal close (backdrop and buttons)
         document.querySelectorAll('[data-close]').forEach(el => {
@@ -249,7 +252,7 @@
     // Background & Progress
     // ============================================
     function updateBackground(cardIndex) {
-        const photoIndex = getPhotoForCard(cardIndex);
+        const photoIndex = cardIndex !== undefined ? getPhotoForCard(cardIndex) : state.currentPhotoIndex;
         const photo = photos[photoIndex];
 
         // Use real photo as background
@@ -257,15 +260,7 @@
         elements.photoPlaceholder.style.backgroundSize = 'cover';
         elements.photoPlaceholder.style.backgroundPosition = 'center';
         elements.photoLabel.textContent = photo.label;
-
-        // Subtle zoom animation
         elements.photoPlaceholder.style.transform = 'scale(1.05)';
-        requestAnimationFrame(() => {
-            elements.photoPlaceholder.style.transform = 'scale(1.08)';
-            setTimeout(() => {
-                elements.photoPlaceholder.style.transform = 'scale(1.05)';
-            }, 50);
-        });
     }
 
     function updateProgress(cardIndex) {
