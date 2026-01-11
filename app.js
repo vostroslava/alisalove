@@ -10,14 +10,11 @@
     // State
     // ============================================
     const state = {
-        currentScreen: 'intro', // 'intro' | 'card-1' to 'card-11' | 'final'
-        currentCardIndex: 0, // 0-10 for cards
+        currentScreen: 'intro',
+        currentCardIndex: 0,
         isAnimating: false,
         touchStartY: 0,
-        touchStartTime: 0,
-        parallaxOffset: 0,
-        photoRotationInterval: null,
-        currentPhotoIndex: 0
+        touchStartTime: 0
     };
 
     // ============================================
@@ -28,8 +25,6 @@
         progressBar: document.getElementById('progress-bar'),
         progressDots: document.querySelectorAll('.progress-dot'),
         backgroundLayer: document.getElementById('background-layer'),
-        photoPlaceholder: document.getElementById('photo-placeholder'),
-        photoLabel: document.getElementById('photo-label'),
         screensContainer: document.getElementById('screens-container'),
         cardsContainer: document.getElementById('cards-container'),
         screenIntro: document.getElementById('screen-intro'),
@@ -52,7 +47,6 @@
         generateCardScreens();
         bindEvents();
         showScreen('intro');
-        updateBackground(0);
     }
 
 
@@ -176,7 +170,6 @@
         // Update card index if on a card
         if (screenName.startsWith('card-')) {
             state.currentCardIndex = parseInt(screenName.split('-')[1]) - 1;
-            updateBackground(state.currentCardIndex);
             updateProgress(state.currentCardIndex);
         }
 
@@ -249,19 +242,8 @@
     }
 
     // ============================================
-    // Background & Progress
+    // Progress
     // ============================================
-    function updateBackground(cardIndex) {
-        const photoIndex = cardIndex !== undefined ? getPhotoForCard(cardIndex) : state.currentPhotoIndex;
-        const photo = photos[photoIndex];
-
-        // Use real photo as background
-        elements.photoPlaceholder.style.backgroundImage = `url('${photo.src}')`;
-        elements.photoPlaceholder.style.backgroundSize = 'cover';
-        elements.photoPlaceholder.style.backgroundPosition = 'center';
-        elements.photoLabel.textContent = photo.label;
-        elements.photoPlaceholder.style.transform = 'scale(1.05)';
-    }
 
     function updateProgress(cardIndex) {
         elements.progressDots.forEach((dot, index) => {
@@ -347,10 +329,6 @@
         const currentY = e.touches[0].clientY;
         const deltaY = state.touchStartY - currentY;
 
-        // Parallax effect during touch
-        const parallaxAmount = deltaY * 0.1;
-        elements.photoPlaceholder.style.transform = `scale(1.05) translateY(${-parallaxAmount}px)`;
-
         // Prevent default scrolling when swiping
         if (Math.abs(deltaY) > 10) {
             e.preventDefault();
@@ -362,9 +340,6 @@
         const deltaY = state.touchStartY - touchEndY;
         const deltaTime = Date.now() - state.touchStartTime;
 
-        // Reset parallax
-        elements.photoPlaceholder.style.transform = 'scale(1.05)';
-
         // Calculate velocity
         const velocity = Math.abs(deltaY) / deltaTime;
 
@@ -374,10 +349,8 @@
 
         if (isValidSwipe && !state.isAnimating) {
             if (deltaY > 0) {
-                // Swipe up - next
                 navigateNext();
             } else {
-                // Swipe down - prev
                 navigatePrev();
             }
         }
@@ -406,20 +379,7 @@
 
     // ============================================
     // Parallax Effect
-    // ============================================
-    function handleMouseMove(e) {
-        if (!state.currentScreen.startsWith('card-')) return;
-
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const deltaX = (e.clientX - centerX) / centerX;
-        const deltaY = (e.clientY - centerY) / centerY;
-
-        const moveX = deltaX * 10;
-        const moveY = deltaY * 10;
-
-        elements.photoPlaceholder.style.transform = `scale(1.05) translate(${moveX}px, ${moveY}px)`;
-    }
+    // ============================================\n    function handleMouseMove(e) {\n        // Parallax disabled\n    }
 
     // ============================================
     // Initialize on DOM Ready
